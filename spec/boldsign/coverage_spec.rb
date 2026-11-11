@@ -102,6 +102,31 @@ RSpec.describe "full coverage" do
     end
   end
 
+  describe "documents sent on behalf of a sender identity" do
+    it "adds onBehalfOf to each per-document call, and omits it when nil" do
+      client = Boldsign::Client.new(api_key: "k")
+      on_behalf = { documentId: "d1", onBehalfOf: "support@example.com" }
+      stubs = [
+        stub_request(:get, "https://api.boldsign.com/v1/document/properties").with(query: on_behalf).to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" }),
+        stub_request(:get, "https://api.boldsign.com/v1/document/download").with(query: on_behalf).to_return(status: 200, body: "%PDF", headers: { "Content-Type" => "application/pdf" }),
+        stub_request(:get, "https://api.boldsign.com/v1/document/downloadAuditLog").with(query: on_behalf).to_return(status: 200, body: "%PDF", headers: { "Content-Type" => "application/pdf" }),
+        stub_request(:post, "https://api.boldsign.com/v1/document/revoke").with(query: on_behalf).to_return(status: 204, body: ""),
+        stub_request(:delete, "https://api.boldsign.com/v1/document/delete").with(query: on_behalf).to_return(status: 204, body: "")
+      ]
+      plain = stub_request(:get, "https://api.boldsign.com/v1/document/properties").with(query: { documentId: "d2" }).to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      client.documents.properties("d1", on_behalf_of: "support@example.com")
+      client.documents.download("d1", on_behalf_of: "support@example.com")
+      client.documents.download_audit_log("d1", on_behalf_of: "support@example.com")
+      client.documents.revoke("d1", { message: "x" }, on_behalf_of: "support@example.com")
+      client.documents.delete("d1", on_behalf_of: "support@example.com")
+      client.documents.properties("d2")
+
+      stubs.each { |stub| expect(stub).to have_been_requested }
+      expect(plain).to have_been_requested
+    end
+  end
+
   describe "response parsing" do
     it "returns nil for empty body responses" do
       stub_request(:delete, "https://api.boldsign.com/v1/document/delete")

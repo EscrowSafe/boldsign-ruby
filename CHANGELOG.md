@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-11-11
+
+### Added
+- `on_behalf_of:` keyword on `documents.properties`, `download`, `download_audit_log`, `revoke` and `delete`, sent as the `onBehalfOf` query parameter BoldSign requires for documents sent on behalf of a sender identity.
+
 ## [0.6.0] — 2026-07-27
 
 ### Added

@@ -18,11 +18,14 @@ module Boldsign
     #   )
     #
     # @see https://developers.boldsign.com/documents
+    #
+    # @example Read a document sent on behalf of a sender identity
+    #   client.documents.properties("doc-id", on_behalf_of: "support@example.com")
     class Document < Resource
       def list(**params);       @client.get("/v1/document/list", params); end
       def team_list(**params);  @client.get("/v1/document/teamlist", params); end
       def behalf_list(**params); @client.get("/v1/document/behalfList", params); end
-      def properties(document_id); @client.get("/v1/document/properties", documentId: document_id); end
+      def properties(document_id, on_behalf_of: nil); @client.get("/v1/document/properties", document_params(document_id, on_behalf_of)); end
 
       # Send a document for signature.
       #
@@ -51,13 +54,13 @@ module Boldsign
       def create_embedded_edit_url(body);    @client.post("/v1/document/createEmbeddedEditUrl", body: body); end
       def get_embedded_sign_link(**params);  @client.get("/v1/document/getEmbeddedSignLink", params); end
 
-      def download(document_id);   @client.download("/v1/document/download", documentId: document_id); end
+      def download(document_id, on_behalf_of: nil); @client.download("/v1/document/download", document_params(document_id, on_behalf_of)); end
       def download_attachment(**params); @client.download("/v1/document/downloadAttachment", params); end
-      def download_audit_log(document_id); @client.download("/v1/document/downloadAuditLog", documentId: document_id); end
+      def download_audit_log(document_id, on_behalf_of: nil); @client.download("/v1/document/downloadAuditLog", document_params(document_id, on_behalf_of)); end
 
-      def revoke(document_id, body = {}); @client.post("/v1/document/revoke", body: body, params: { documentId: document_id }); end
+      def revoke(document_id, body = {}, on_behalf_of: nil); @client.post("/v1/document/revoke", body: body, params: document_params(document_id, on_behalf_of)); end
       def remind(document_id, body = {}); @client.post("/v1/document/remind", body: body, params: { documentId: document_id }); end
-      def delete(document_id);            @client.delete("/v1/document/delete", documentId: document_id); end
+      def delete(document_id, on_behalf_of: nil); @client.delete("/v1/document/delete", document_params(document_id, on_behalf_of)); end
       def extend_expiry(document_id, body); @client.patch("/v1/document/extendExpiry", body: body, params: { documentId: document_id }); end
 
       def change_access_code(document_id, body); @client.patch("/v1/document/changeAccessCode", body: body, params: { documentId: document_id }); end
@@ -72,6 +75,12 @@ module Boldsign
       def prefill_fields(document_id, body); @client.patch("/v1/document/prefillFields", body: body, params: { documentId: document_id }); end
 
       private
+
+      # BoldSign requires `onBehalfOf` on calls about a document that was sent on
+      # behalf of a sender identity; it is omitted when nil.
+      def document_params(document_id, on_behalf_of)
+        { documentId: document_id, onBehalfOf: on_behalf_of }.compact
+      end
 
       # BoldSign's POST /v1/document/send multipart endpoint is fussy about
       # repeated/array-valued parts. Multi-valued fields (e.g. two signers)
