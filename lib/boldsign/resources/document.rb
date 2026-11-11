@@ -58,7 +58,10 @@ module Boldsign
       def download_attachment(**params); @client.download("/v1/document/downloadAttachment", params); end
       def download_audit_log(document_id, on_behalf_of: nil); @client.download("/v1/document/downloadAuditLog", document_params(document_id, on_behalf_of)); end
 
-      def revoke(document_id, body = {}, on_behalf_of: nil); @client.post("/v1/document/revoke", body: body, params: document_params(document_id, on_behalf_of)); end
+      # Body fields may be passed as a hash or as keywords (`revoke(id, message: "...")`).
+      def revoke(document_id, body = {}, on_behalf_of: nil, **body_fields)
+        @client.post("/v1/document/revoke", body: body.merge(body_fields), params: document_params(document_id, on_behalf_of))
+      end
       def remind(document_id, body = {}); @client.post("/v1/document/remind", body: body, params: { documentId: document_id }); end
       def delete(document_id, on_behalf_of: nil); @client.delete("/v1/document/delete", document_params(document_id, on_behalf_of)); end
       def extend_expiry(document_id, body); @client.patch("/v1/document/extendExpiry", body: body, params: { documentId: document_id }); end

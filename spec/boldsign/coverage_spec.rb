@@ -110,7 +110,7 @@ RSpec.describe "full coverage" do
         stub_request(:get, "https://api.boldsign.com/v1/document/properties").with(query: on_behalf).to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" }),
         stub_request(:get, "https://api.boldsign.com/v1/document/download").with(query: on_behalf).to_return(status: 200, body: "%PDF", headers: { "Content-Type" => "application/pdf" }),
         stub_request(:get, "https://api.boldsign.com/v1/document/downloadAuditLog").with(query: on_behalf).to_return(status: 200, body: "%PDF", headers: { "Content-Type" => "application/pdf" }),
-        stub_request(:post, "https://api.boldsign.com/v1/document/revoke").with(query: on_behalf).to_return(status: 204, body: ""),
+        stub_request(:post, "https://api.boldsign.com/v1/document/revoke").with(query: on_behalf, body: hash_including("message" => "x")).to_return(status: 204, body: ""),
         stub_request(:delete, "https://api.boldsign.com/v1/document/delete").with(query: on_behalf).to_return(status: 204, body: "")
       ]
       plain = stub_request(:get, "https://api.boldsign.com/v1/document/properties").with(query: { documentId: "d2" }).to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
@@ -118,7 +118,7 @@ RSpec.describe "full coverage" do
       client.documents.properties("d1", on_behalf_of: "support@example.com")
       client.documents.download("d1", on_behalf_of: "support@example.com")
       client.documents.download_audit_log("d1", on_behalf_of: "support@example.com")
-      client.documents.revoke("d1", { message: "x" }, on_behalf_of: "support@example.com")
+      client.documents.revoke("d1", message: "x", on_behalf_of: "support@example.com")
       client.documents.delete("d1", on_behalf_of: "support@example.com")
       client.documents.properties("d2")
 
